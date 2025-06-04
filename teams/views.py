@@ -38,3 +38,36 @@ class TeamsViews(APIView):
         team = Team.objects.create(**team_data)
 
         return Response(model_to_dict(team), 201)
+
+
+class TeamsViewsDetails(APIView):
+    def get(self, request, team_id):
+        try:
+            team = Team.objects.get(pk=team_id)
+        except Team.DoesNotExist:
+            return Response({"message": "Team not found"}, 404)
+
+        return Response(model_to_dict(team))
+
+    def patch(self, request, team_id):
+        team_data = request.data
+        try:
+            team = Team.objects.get(pk=team_id)
+        except Team.DoesNotExist:
+            return Response({"message": "Team not found"}, 404)
+
+        for keys in ["name", "titles", "top_scorer", "fifa_code", "first_cup"]:
+            if keys in team_data:
+                setattr(team, keys, team_data[keys])
+        team.save()
+
+        return Response(model_to_dict(team), 200)
+
+    def delete(self, request, team_id):
+        try:
+            team = Team.objects.get(pk=team_id)
+        except Team.DoesNotExist:
+            return Response({"message": "Team not found"}, 404)
+        team.delete()
+
+        return Response({}, 204)
